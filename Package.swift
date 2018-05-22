@@ -8,11 +8,10 @@ let package = Package(
         .library(name: "ElasticsearchService", targets: ["ElasticsearchService"])
     ],
     dependencies: [
-        .package(url: "https://github.com/vapor/vapor.git", from: "3.0.0"),
-        .package(url: "https://github.com/skelpo/JSON.git", from: "0.1.3")
+        .package(url: "https://github.com/vapor/vapor.git", from: "3.0.0")
     ],
     targets: [
-        .target(name: "ElasticsearchService", dependencies: ["JSON", "Vapor"]),
+        .target(name: "ElasticsearchService", dependencies: ["Vapor"]),
         .testTarget(name: "ElasticsearchServiceTests", dependencies: ["ElasticsearchService"])
     ]
 )

@@ -1,5 +1,4 @@
 import Vapor
-import JSON
 
 public final class ElasticsearchClient: Service {
     let httpClient: Client
@@ -10,26 +9,26 @@ public final class ElasticsearchClient: Service {
         self.serverURL = serverURL
     }
 
-    public func search(index: String, type: String = "_doc", _ query: JSON, on worker: Worker) throws -> Future<JSON> {
-        var headers: HTTPHeaders = [:]
+    public func search(index: String, type: String = "_doc", _ query: [AnyHashable: Any], on container: Container) throws -> Future<[AnyHashable: Any]> {
         let url = constructEndpoint(pathComponents: index, type, "_search")
+        var headers: HTTPHeaders = [:]
 
         headers.add(name: .contentType, value: "application/json")
 
-        let request = httpClient.post(url, headers: headers) { req in
-            try req.content.encode(json: query)
-        }
+        let data = try JSONSerialization.data(withJSONObject: query, options: [])
+        let httpRequest = HTTPRequest(method: .POST, url: url, headers: headers, body: data)
+        let request = Request(http: httpRequest, using: container)
 
-        return request.flatMap(to: JSON.self) { response in
-            if response.http.status != .ok {
+        return httpClient.send(request).map(to: [AnyHashable: Any].self) { response in
+            guard
+                response.http.status == .ok,
+                let data = response.http.body.data,
+                let result = try JSONSerialization.jsonObject(with: data, options: []) as? [AnyHashable: Any]
+            else {
                 throw Abort(.badRequest)
             }
 
-            do {
-                return try response.content.decode(JSON.self)
-            } catch {
-                throw Abort(.internalServerError)
-            }
+            return result
         }
     }
 
@@ -39,4 +38,3 @@ public final class ElasticsearchClient: Service {
         }
     }
 }
-
