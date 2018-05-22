@@ -11,13 +11,7 @@ public final class ElasticsearchClient: Service {
 
     public func search(index: String, type: String = "_doc", _ query: [AnyHashable: Any], on container: Container) throws -> Future<[AnyHashable: Any]> {
         let url = constructEndpoint(pathComponents: index, type, "_search")
-        var headers: HTTPHeaders = [:]
-
-        headers.add(name: .contentType, value: "application/json")
-
-        let data = try JSONSerialization.data(withJSONObject: query, options: [])
-        let httpRequest = HTTPRequest(method: .POST, url: url, headers: headers, body: data)
-        let request = Request(http: httpRequest, using: container)
+        let request = try prepareGenericRequest(url: url, body: query, on: container)
 
         return httpClient.send(request).map(to: [AnyHashable: Any].self) { response in
             guard
@@ -32,9 +26,33 @@ public final class ElasticsearchClient: Service {
         }
     }
 
+    public func search<T: Decodable>(index: String, type: String = "_doc", _ query: [AnyHashable: Any], decodeTo resultType: T.Type, on container: Container) throws -> Future<Result<T>> {
+        let url = constructEndpoint(pathComponents: index, type, "_search")
+        let request = try prepareGenericRequest(url: url, body: query, on: container)
+
+        return httpClient.send(request).flatMap(to: Result<T>.self) { response in
+            guard response.http.status == .ok else {
+                throw Abort(.badRequest)
+            }
+
+            return try response.content.decode(Result<T>.self)
+        }
+    }
+
     func constructEndpoint(pathComponents: String...) -> URL {
         return pathComponents.reduce(serverURL) { url, pathComponent -> URL in
             return url.appendingPathComponent(pathComponent)
         }
+    }
+
+    func prepareGenericRequest(method: HTTPMethod = .POST, url: URL, body: Any, on container: Container) throws -> Request {
+        var headers: HTTPHeaders = [:]
+
+        headers.add(name: .contentType, value: "application/json")
+
+        let data = try JSONSerialization.data(withJSONObject: body, options: [])
+        let httpRequest = HTTPRequest(method: method, url: url, headers: headers, body: data)
+
+        return Request(http: httpRequest, using: container)
     }
 }
