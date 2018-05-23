@@ -1,3 +1,5 @@
 import Vapor
 
-public struct MatchNone: Content {}
+public struct MatchNone: Content {
+    public init() {}
+}

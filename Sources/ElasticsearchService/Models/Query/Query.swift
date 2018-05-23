@@ -7,7 +7,7 @@ public struct Query: Content {
     let matchAll: MatchAll?
     let matchNone: MatchNone?
 
-    init(
+    public init(
         matchPhrase: MatchPhrase? = nil,
         fuzzy: Fuzzy? = nil,
         bool: BoolQuery? = nil,

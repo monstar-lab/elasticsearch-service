@@ -8,7 +8,7 @@ public struct Fuzzy: Content {
     let maxExpansions: Int?
     let transpositions: Bool?
 
-    init(
+    public init(
         key: String,
         value: String,
         fuzziness: Int? = nil,

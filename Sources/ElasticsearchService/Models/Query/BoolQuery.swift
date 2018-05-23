@@ -8,7 +8,7 @@ public struct BoolQuery: Content {
     let minimumShouldMatch: Int?
     let boost: Float?
 
-    init(
+    public init(
         must: [Query]? = nil,
         should: [Query]? = nil,
         shouldNot: [Query]? = nil,

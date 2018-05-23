@@ -1,3 +1,5 @@
 import Vapor
 
-public struct MatchAll: Content {}
+public struct MatchAll: Content {
+    public init() {}
+}

@@ -70,8 +70,8 @@ public final class ElasticsearchClient: Service {
     }
 }
 
-extension Future where T == Response {
-    public func mapResponse<U>(to: U.Type, or error: Error) throws -> Future<U> {
+internal extension Future where T == Response {
+    internal func mapResponse<U>(to: U.Type, or error: Error) throws -> Future<U> {
         return self.map(to: U.self) { response in
             guard
                 response.http.status == .ok,
