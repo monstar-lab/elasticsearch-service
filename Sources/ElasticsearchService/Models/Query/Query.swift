@@ -1,24 +1,24 @@
 import Vapor
 
 public struct Query: Content {
-    let matchPhrase: MatchPhrase?
-    let fuzzy: Fuzzy?
     let bool: BoolQuery?
+    let fuzzy: Fuzzy?
     let matchAll: MatchAll?
     let matchNone: MatchNone?
+    let matchPhrase: MatchPhrase?
 
     public init(
-        matchPhrase: MatchPhrase? = nil,
-        fuzzy: Fuzzy? = nil,
         bool: BoolQuery? = nil,
+        fuzzy: Fuzzy? = nil,
         matchAll: MatchAll? = nil,
-        matchNone: MatchNone? = nil
+        matchNone: MatchNone? = nil,
+        matchPhrase: MatchPhrase? = nil
     ) {
-        self.matchPhrase = matchPhrase
-        self.fuzzy = fuzzy
         self.bool = bool
+        self.fuzzy = fuzzy
         self.matchAll = matchAll
         self.matchNone = matchNone
+        self.matchPhrase = matchPhrase
     }
 
     enum CodingKeys: String, CodingKey {
