@@ -24,26 +24,12 @@ public struct Fuzzy: Content {
         self.transpositions = transpositions
     }
 
-    struct InnerFuzzy: Encodable {
+    struct Inner: Encodable {
         let value: String
         let fuzziness: Int?
         let prefixLength: Int?
         let maxExpansions: Int?
         let transpositions: Bool?
-
-        init(
-            value: String,
-            fuzziness: Int? = nil,
-            prefixLength: Int? = nil,
-            maxExpansions: Int? = nil,
-            transpositions: Bool? = nil
-        ) {
-            self.value = value
-            self.fuzziness = fuzziness
-            self.prefixLength = prefixLength
-            self.maxExpansions = maxExpansions
-            self.transpositions = transpositions
-        }
 
         enum CodingKeys: String, CodingKey {
             case value
@@ -56,7 +42,7 @@ public struct Fuzzy: Content {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: DynamicKey.self)
-        let inner = InnerFuzzy(
+        let inner = Fuzzy.Inner(
             value: value,
             fuzziness: fuzziness,
             prefixLength: prefixLength,

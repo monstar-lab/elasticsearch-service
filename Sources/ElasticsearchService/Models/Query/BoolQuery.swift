@@ -6,7 +6,7 @@ public struct BoolQuery: Content {
     public var shouldNot: [Query]?
     public var filter: [Query]?
     let minimumShouldMatch: Int?
-    let boost: Float?
+    let boost: Decimal?
 
     public init(
         must: [Query]? = nil,
@@ -14,7 +14,7 @@ public struct BoolQuery: Content {
         shouldNot: [Query]? = nil,
         filter: [Query]? = nil,
         minimumShouldMatch: Int? = nil,
-        boost: Float? = nil
+        boost: Decimal? = nil
     ) {
         self.must = must
         self.should = should

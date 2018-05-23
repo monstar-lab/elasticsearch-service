@@ -1,3 +1,5 @@
+import Foundation
+
 public struct Result<T: Decodable>: Decodable {
     public let took: Int
     public let timedOut: Bool
@@ -13,14 +15,14 @@ public struct Result<T: Decodable>: Decodable {
 
     public struct HitsContainer: Decodable {
         public let total: Int
-        public let maxScore: Double?
+        public let maxScore: Decimal?
         public let hits: [Hit]
 
         public struct Hit: Decodable {
             public let index: String
             public let type: String
             public let id: String
-            public let score: Double
+            public let score: Decimal
             public let source: T
 
             enum CodingKeys: String, CodingKey {
