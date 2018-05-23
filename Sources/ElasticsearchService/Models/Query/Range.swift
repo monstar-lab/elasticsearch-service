@@ -1,6 +1,9 @@
 import Vapor
 
-public struct Range: Content {
+public struct Range: QueryElement {
+    public typealias QueryType = Range
+    public var codingKey = "range"
+
     typealias RangePair = (numeric: Double?, textual: String?)
 
     let key: String

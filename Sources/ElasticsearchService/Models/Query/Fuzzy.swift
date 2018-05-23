@@ -1,6 +1,9 @@
 import Vapor
 
-public struct Fuzzy: Content {
+public struct Fuzzy: QueryElement {
+    public typealias QueryType = Fuzzy
+    public var codingKey = "query"
+
     let key: String
     let value: String
     let fuzziness: Int?

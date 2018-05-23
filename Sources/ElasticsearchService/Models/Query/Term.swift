@@ -1,7 +1,7 @@
 import Vapor
 
-public struct Term: AnyQuery {
-    public typealias Query = Term
+public struct Term: QueryElement {
+    public typealias QueryType = Term
     public var codingKey = "term"
 
     let key: String

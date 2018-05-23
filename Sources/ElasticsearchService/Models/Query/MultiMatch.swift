@@ -1,15 +1,18 @@
 import Vapor
 
-public struct MultiMatch: Content {
+public struct MultiMatch: QueryElement {
+    public typealias QueryType = MultiMatch
+    public var codingKey = "multi_match"
+
     let value: String
     let fields: [String]
-    let type: MultiMatch.QueryType?
+    let type: Kind?
     let tieBreaker: Decimal?
 
     public init(
         value: String,
         fields: [String],
-        type: MultiMatch.QueryType? = nil,
+        type: Kind? = nil,
         tieBreaker: Decimal? = nil
     ) {
         self.value = value
@@ -18,7 +21,7 @@ public struct MultiMatch: Content {
         self.tieBreaker = tieBreaker
     }
 
-    public enum QueryType: String, Content {
+    public enum Kind: String, Content {
         case bestFields = "best_fields"
         case mostFields = "most_fields"
         case crossFields = "cross_fields"

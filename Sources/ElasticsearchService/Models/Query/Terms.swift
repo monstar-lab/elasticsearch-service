@@ -1,6 +1,9 @@
 import Vapor
 
-public struct Terms: Content {
+public struct Terms: QueryElement {
+    public typealias QueryType = Terms
+    public var codingKey = "terms"
+
     let key: String
     let values: [String]
 

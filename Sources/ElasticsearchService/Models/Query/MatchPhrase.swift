@@ -1,6 +1,9 @@
 import Vapor
 
-public struct MatchPhrase: Content {
+public struct MatchPhrase: QueryElement {
+    public typealias QueryType = MatchPhrase
+    public var codingKey = "match_phrase"
+
     let key: String
     let value: String
 

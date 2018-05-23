@@ -9,7 +9,7 @@ public final class ElasticsearchClient: Service {
         self.serverURL = serverURL
     }
 
-    public func search(index: String, type: String = "_doc", _ query: QueryContainer, on container: Container) throws -> Future<[AnyHashable: Any]> {
+    public func search<T: QueryElement>(index: String, type: String = "_doc", _ query: QueryContainer<T>, on container: Container) throws -> Future<[AnyHashable: Any]> {
         let url = constructEndpoint(pathComponents: index, type, "_search")
         var headers: HTTPHeaders = [:]
 
