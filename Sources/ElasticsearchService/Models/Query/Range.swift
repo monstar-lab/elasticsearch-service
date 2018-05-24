@@ -4,8 +4,6 @@ public struct Range: QueryElement {
     public typealias QueryType = Range
     public var codingKey = "range"
 
-    typealias RangePair = (numeric: Double?, textual: String?)
-
     let key: String
     let greaterThanOrEqual: RangePair?
     let greaterThan: RangePair?
@@ -18,16 +16,16 @@ public struct Range: QueryElement {
     public init(
         key: String,
         greaterThanOrEqualTo: Double? = nil,
-        greaterThanTo: Double? = nil,
+        greaterThan: Double? = nil,
         lesserThanOrEqualTo: Double? = nil,
-        lesserThanTo: Double? = nil,
+        lesserThan: Double? = nil,
         boost: Decimal? = nil
     ) {
         self.key = key
         self.greaterThanOrEqual = RangePair(greaterThanOrEqualTo, nil)
-        self.greaterThan = RangePair(greaterThanTo, nil)
+        self.greaterThan = RangePair(greaterThan, nil)
         self.lesserThanOrEqual = RangePair(lesserThanOrEqualTo, nil)
-        self.lesserThan = RangePair(lesserThanTo, nil)
+        self.lesserThan = RangePair(lesserThan, nil)
         self.boost = boost
         self.format = nil
         self.timeZone = nil
@@ -36,25 +34,21 @@ public struct Range: QueryElement {
     public init(
         key: String,
         greaterThanOrEqualTo: String? = nil,
-        greaterThanTo: String? = nil,
+        greaterThan: String? = nil,
         lesserThanOrEqualTo: String? = nil,
-        lesserThanTo: String? = nil,
+        lesserThan: String? = nil,
         boost: Decimal? = nil,
         format: String? = nil,
         timeZone: String? = nil
     ) {
         self.key = key
         self.greaterThanOrEqual = RangePair(nil, greaterThanOrEqualTo)
-        self.greaterThan = RangePair(nil, greaterThanTo)
+        self.greaterThan = RangePair(nil, greaterThan)
         self.lesserThanOrEqual = RangePair(nil, lesserThanOrEqualTo)
-        self.lesserThan = RangePair(nil, lesserThanTo)
+        self.lesserThan = RangePair(nil, lesserThan)
         self.boost = boost
         self.format = format
         self.timeZone = timeZone
-    }
-
-    public init(from decoder: Decoder) throws {
-        fatalError("This operation is not supported.")
     }
 
     struct Inner: Encodable {
@@ -69,14 +63,22 @@ public struct Range: QueryElement {
         func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
-            try container.encodeIfPresent(greaterThanOrEqual?.numeric, forKey: .greaterThanOrEqual)
-            try container.encodeIfPresent(greaterThanOrEqual?.textual, forKey: .greaterThanOrEqual)
-            try container.encodeIfPresent(greaterThan?.numeric, forKey: .greaterThan)
-            try container.encodeIfPresent(greaterThan?.textual, forKey: .greaterThan)
-            try container.encodeIfPresent(lesserThanOrEqual?.numeric, forKey: .lesserThanOrEqual)
-            try container.encodeIfPresent(lesserThanOrEqual?.textual, forKey: .lesserThanOrEqual)
-            try container.encodeIfPresent(lesserThan?.numeric, forKey: .lesserThan)
-            try container.encodeIfPresent(lesserThan?.textual, forKey: .lesserThan)
+            if let pair = greaterThanOrEqual, pair.hasValue {
+                try container.encodeIfPresent(greaterThanOrEqual, forKey: .greaterThanOrEqual)
+            }
+
+            if let pair = greaterThan, pair.hasValue {
+                try container.encodeIfPresent(greaterThan, forKey: .greaterThan)
+            }
+
+            if let pair = lesserThanOrEqual, pair.hasValue {
+                try container.encodeIfPresent(lesserThanOrEqual, forKey: .lesserThanOrEqual)
+            }
+
+            if let pair = lesserThan, pair.hasValue {
+                try container.encodeIfPresent(lesserThan, forKey: .lesserThan)
+            }
+
             try container.encodeIfPresent(boost, forKey: .boost)
             try container.encodeIfPresent(format, forKey: .format)
             try container.encodeIfPresent(timeZone, forKey: .timeZone)
@@ -90,6 +92,29 @@ public struct Range: QueryElement {
             case boost
             case format
             case timeZone = "time_zone"
+        }
+    }
+
+    struct RangePair: Codable {
+        let numeric: Double?
+        let textual: String?
+        var hasValue: Bool {
+            get { return numeric != nil || textual != nil }
+        }
+
+        init(_ numeric: Double? = nil, _ textual: String? = nil) {
+            self.numeric = numeric
+            self.textual = textual
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+
+            if let numeric = numeric {
+                try container.encode(numeric)
+            } else if let textual = textual {
+                try container.encode(textual)
+            }
         }
     }
 

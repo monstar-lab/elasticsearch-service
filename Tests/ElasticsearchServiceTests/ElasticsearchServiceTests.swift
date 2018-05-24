@@ -111,9 +111,9 @@ final class ElasticsearchServiceTests: XCTestCase {
 
     func testRange_encodesInQueryCorrectly_date() throws {
         let json = """
-        {"range":{"created":{"gte":"01-01-2010","lte":"31-12-2010","format":"dd-MM-yyyy"}}}
+        {"range":{"created":{"gt":"01-01-2010","format":"dd-MM-yyyy","lt":"31-12-2010"}}}
         """
-        let range = Range(key: "created", greaterThanOrEqualTo: "01-01-2010", lesserThanOrEqualTo: "31-12-2010", format: "dd-MM-yyyy")
+        let range = Range(key: "created", greaterThan: "01-01-2010", lesserThan: "31-12-2010", format: "dd-MM-yyyy")
         let query = Query(range)
         let encoded = try encoder.encodeToString(query)
 
