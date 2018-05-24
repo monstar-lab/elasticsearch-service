@@ -2,7 +2,7 @@ import Vapor
 
 public struct Fuzzy: QueryElement {
     public typealias QueryType = Fuzzy
-    public var codingKey = "query"
+    public var codingKey = "fuzzy"
 
     let key: String
     let value: String

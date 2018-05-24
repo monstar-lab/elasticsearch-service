@@ -1,6 +1,6 @@
 struct DynamicKey: CodingKey {
-    var stringValue: String
     var intValue: Int? { return nil }
+    var stringValue: String
 
     init?(intValue: Int) { return nil }
 

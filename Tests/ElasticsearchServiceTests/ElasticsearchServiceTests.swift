@@ -8,19 +8,17 @@ final class ElasticsearchServiceTests: XCTestCase {
         encoder = JSONEncoder()
     }
 
-    /*
-     * Codable seems to be bad at encoding empty objects when you are already
-     * bending Codable as much as this project has.
-    func testMatchAll_encodesStandaloneCorrectly() throws {
+    func testQueryContainer_encodesCorrectly() throws {
         let json = """
-        {}
+        {"query":{"match":{"title":{"query":"Recipes with pasta or spaghetti","operator":"and"}}}}
         """
-        let matchAll = MatchAll()
-        let encoded = try encoder.encodeToString(matchAll)
+        let match = Match(key: "title", value: "Recipes with pasta or spaghetti", operator: "and")
+        let query = Query(match)
+        let queryContainer = QueryContainer(query)
+        let encoded = try encoder.encodeToString(queryContainer)
 
         XCTAssertEqual(json, encoded)
     }
-    */
 
     func testMatchAll_encodesInQueryCorrectly() throws {
         let json = """
@@ -33,16 +31,6 @@ final class ElasticsearchServiceTests: XCTestCase {
         XCTAssertEqual(json, encoded)
     }
 
-    /*func testMatchNone_encodesStandaloneCorrectly() throws {
-        let json = """
-        {}
-        """
-        let matchNone = MatchNone()
-        let encoded = try encoder.encodeToString(matchNone)
-
-        XCTAssertEqual(json, encoded)
-    }*/
-
     func testMatchNone_encodesInQueryCorrectly() throws {
         let json = """
         {"match_none":{}}
@@ -50,16 +38,6 @@ final class ElasticsearchServiceTests: XCTestCase {
         let matchNone = MatchNone()
         let query = Query(matchNone)
         let encoded = try encoder.encodeToString(query)
-
-        XCTAssertEqual(json, encoded)
-    }
-
-    func testMatch_encodesStandaloneCorrectly() throws {
-        let json = """
-        {"title":{"query":"Recipes with pasta or spaghetti","operator":"and"}}
-        """
-        let match = Match(key: "title", value: "Recipes with pasta or spaghetti", operator: "and")
-        let encoded = try encoder.encodeToString(match)
 
         XCTAssertEqual(json, encoded)
     }
@@ -75,16 +53,6 @@ final class ElasticsearchServiceTests: XCTestCase {
         XCTAssertEqual(json, encoded)
     }
 
-    func testMatchPhrase_encodesStandaloneCorrectly() throws {
-        let json = """
-        {"title":"puttanesca spaghetti"}
-        """
-        let matchPhrase = MatchPhrase(key: "title", value: "puttanesca spaghetti")
-        let encoded = try encoder.encodeToString(matchPhrase)
-
-        XCTAssertEqual(json, encoded)
-    }
-
     func testMatchPhrase_encodesInQueryCorrectly() throws {
         let json = """
         {"match_phrase":{"title":"puttanesca spaghetti"}}
@@ -96,16 +64,6 @@ final class ElasticsearchServiceTests: XCTestCase {
         XCTAssertEqual(json, encoded)
     }
 
-    func testMultiMatch_encodesStandaloneCorrectly() throws {
-        let json = """
-        {"fields":["title","description"],"query":"pasta","type":"cross_fields","tie_breaker":0.3}
-        """
-        let multiMatch = MultiMatch(value: "pasta", fields: ["title", "description"], type: .crossFields, tieBreaker: 0.3)
-        let encoded = try encoder.encodeToString(multiMatch)
-
-        XCTAssertEqual(json, encoded)
-    }
-
     func testMultiMatch_encodesInQueryCorrectly() throws {
         let json = """
         {"multi_match":{"fields":["title","description"],"query":"pasta","type":"cross_fields","tie_breaker":0.3}}
@@ -113,16 +71,6 @@ final class ElasticsearchServiceTests: XCTestCase {
         let multiMatch = MultiMatch(value: "pasta", fields: ["title", "description"], type: .crossFields, tieBreaker: 0.3)
         let query = Query(multiMatch)
         let encoded = try encoder.encodeToString(query)
-
-        XCTAssertEqual(json, encoded)
-    }
-
-    func testTerm_encodesStandaloneCorrectly() throws {
-        let json = """
-        {"description":{"value":"drinking","boost":2}}
-        """
-        let term = Term(key: "description", value: "drinking", boost: 2.0)
-        let encoded = try encoder.encodeToString(term)
 
         XCTAssertEqual(json, encoded)
     }
@@ -139,16 +87,6 @@ final class ElasticsearchServiceTests: XCTestCase {
         XCTAssertEqual(json, encoded)
     }
 
-    func testTerms_encodesStandaloneCorrectly() throws {
-        let json = """
-        {"tags.keyword":["Soup","Cake"]}
-        """
-        let terms = Terms(key: "tags.keyword", values: ["Soup", "Cake"])
-        let encoded = try encoder.encodeToString(terms)
-
-        XCTAssertEqual(json, encoded)
-    }
-
     func testTerms_encodesInQueryCorrectly() throws {
         let json = """
         {"terms":{"tags.keyword":["Soup","Cake"]}}
@@ -156,26 +94,6 @@ final class ElasticsearchServiceTests: XCTestCase {
         let terms = Terms(key: "tags.keyword", values: ["Soup", "Cake"])
         let query = Query(terms)
         let encoded = try encoder.encodeToString(query)
-
-        XCTAssertEqual(json, encoded)
-    }
-
-    func testRange_encodesStandaloneCorrectly() throws {
-        let json = """
-        {"in_stock":{"gte":1,"lte":5}}
-        """
-        let range = Range(key: "in_stock", greaterThanOrEqualTo: 1, lesserThanOrEqualTo: 5)
-        let encoded = try encoder.encodeToString(range)
-
-        XCTAssertEqual(json, encoded)
-    }
-
-    func testRange_encodesStandaloneCorrectly_date() throws {
-        let json = """
-        {"created":{"gte":"01-01-2010","lte":"31-12-2010","format":"dd-MM-yyyy"}}
-        """
-        let range = Range(key: "created", greaterThanOrEqualTo: "01-01-2010", lesserThanOrEqualTo: "31-12-2010", format: "dd-MM-yyyy")
-        let encoded = try encoder.encodeToString(range)
 
         XCTAssertEqual(json, encoded)
     }
@@ -191,12 +109,13 @@ final class ElasticsearchServiceTests: XCTestCase {
         XCTAssertEqual(json, encoded)
     }
 
-    func testExists_encodesStandaloneCorrectly() throws {
+    func testRange_encodesInQueryCorrectly_date() throws {
         let json = """
-        {"field":"tags"}
+        {"range":{"created":{"gte":"01-01-2010","lte":"31-12-2010","format":"dd-MM-yyyy"}}}
         """
-        let exists = Exists(field: "tags")
-        let encoded = try encoder.encodeToString(exists)
+        let range = Range(key: "created", greaterThanOrEqualTo: "01-01-2010", lesserThanOrEqualTo: "31-12-2010", format: "dd-MM-yyyy")
+        let query = Query(range)
+        let encoded = try encoder.encodeToString(query)
 
         XCTAssertEqual(json, encoded)
     }
@@ -212,14 +131,71 @@ final class ElasticsearchServiceTests: XCTestCase {
         XCTAssertEqual(json, encoded)
     }
 
-    func testBool_encodesStandaloneCorrectly() throws {
+    func testBool_encodesInQueryCorrectly() throws {
         let json = """
-        {"must":[{"match":{"title":{"query":"pasta"}}}]}
+        {"bool":{"must":[{"match":{"title":{"query":"pasta"}}}]}}
         """
         let match = Query(Match(key: "title", value: "pasta"))
-        let range = Query(Range(key: "preparation_time_minutes", lesserThanOrEqualTo: 15))
+        // Multi-type queries don’t unfortunately work at the moment
+        // let range = Query(Range(key: "preparation_time_minutes", lesserThanOrEqualTo: 15))
         let bool = BoolQuery(must: [match])
-        let encoded = try encoder.encodeToString(bool)
+        let query = Query(bool)
+        let encoded = try encoder.encodeToString(query)
+
+        XCTAssertEqual(json, encoded)
+    }
+
+    func testPrefix_encodesInQueryCorrectly() throws {
+        let json = """
+        {"prefix":{"tags.keyword":{"value":"Vege","boost":1}}}
+        """
+        let prefix = Prefix(key: "tags.keyword", value: "Vege", boost: 1)
+        let query = Query(prefix)
+        let encoded = try encoder.encodeToString(query)
+
+        XCTAssertEqual(json, encoded)
+    }
+
+    func testWildcard_encodesInQueryCorrectly() throws {
+        let json = """
+        {"wildcard":{"tags.keyword":{"value":"Veg*ble","boost":2}}}
+        """
+        let wildcard = Wildcard(key: "tags.keyword", value: "Veg*ble", boost: 2)
+        let query = Query(wildcard)
+        let encoded = try encoder.encodeToString(query)
+
+        XCTAssertEqual(json, encoded)
+    }
+
+    func testRegexp_encodesInQueryCorrectly() throws {
+        let json = """
+        {"regexp":{"tags.keyword":{"value":"Veg[a-zA-Z]ble","boost":2.5}}}
+        """
+        let regexp = Regexp(key: "tags.keyword", value: "Veg[a-zA-Z]ble", boost: 2.5)
+        let query = Query(regexp)
+        let encoded = try encoder.encodeToString(query)
+
+        XCTAssertEqual(json, encoded)
+    }
+
+    func testFuzzy_encodesInQueryCorrectly() throws {
+        let json = """
+        {"fuzzy":{"name":{"value":"bolster","fuzziness":2}}}
+        """
+        let fuzzy = Fuzzy(key: "name", value: "bolster", fuzziness: 2)
+        let query = Query(fuzzy)
+        let encoded = try encoder.encodeToString(query)
+
+        XCTAssertEqual(json, encoded)
+    }
+
+    func testIDs_encodesInQueryCorrectly() throws {
+        let json = """
+        {"ids":{"values":["1","2","3"]}}
+        """
+        let ids = IDs(["1", "2", "3"])
+        let query = Query(ids)
+        let encoded = try encoder.encodeToString(query)
 
         XCTAssertEqual(json, encoded)
     }
@@ -234,36 +210,27 @@ final class ElasticsearchServiceTests: XCTestCase {
     }
 
     static var allTests = [
-        //("testMatchAll_encodesStandaloneCorrectly", testMatchAll_encodesStandaloneCorrectly),
-        ("testMatchAll_encodesInQueryCorrectly", testMatchAll_encodesInQueryCorrectly),
+        ("testQueryContainer_encodesCorrectly",     testQueryContainer_encodesCorrectly),
 
-        //("testMatchNone_encodesStandaloneCorrectly", testMatchNone_encodesStandaloneCorrectly),
-        ("testMatchNone_encodesInQueryCorrectly", testMatchNone_encodesInQueryCorrectly),
-
-        ("testMatch_encodesStandaloneCorrectly", testMatch_encodesStandaloneCorrectly),
-        ("testMatch_encodesInQueryCorrectly", testMatch_encodesInQueryCorrectly),
-
-        ("testMatchPhrase_encodesStandaloneCorrectly", testMatchPhrase_encodesStandaloneCorrectly),
+        ("testMatchAll_encodesInQueryCorrectly",    testMatchAll_encodesInQueryCorrectly),
+        ("testMatchNone_encodesInQueryCorrectly",   testMatchNone_encodesInQueryCorrectly),
+        ("testMatch_encodesInQueryCorrectly",       testMatch_encodesInQueryCorrectly),
         ("testMatchPhrase_encodesInQueryCorrectly", testMatchPhrase_encodesInQueryCorrectly),
+        ("testMultiMatch_encodesInQueryCorrectly",  testMultiMatch_encodesInQueryCorrectly),
+        ("testTerm_encodesInQueryCorrectly",        testTerm_encodesInQueryCorrectly),
+        ("testTerms_encodesInQueryCorrectly",       testTerms_encodesInQueryCorrectly),
 
-        ("testMultiMatch_encodesStandaloneCorrectly", testMultiMatch_encodesStandaloneCorrectly),
-        ("testMultiMatch_encodesInQueryCorrectly", testMultiMatch_encodesInQueryCorrectly),
+        ("testRange_encodesInQueryCorrectly",       testRange_encodesInQueryCorrectly),
+        ("testRange_encodesInQueryCorrectly_date",  testRange_encodesInQueryCorrectly_date),
 
-        ("testTerm_encodesStandaloneCorrectly", testTerm_encodesStandaloneCorrectly),
-        ("testTerm_encodesInQueryCorrectly", testTerm_encodesInQueryCorrectly),
+        ("testExists_encodesInQueryCorrectly",      testExists_encodesInQueryCorrectly),
+        ("testBool_encodesInQueryCorrectly",        testBool_encodesInQueryCorrectly),
+        ("testPrefix_encodesInQueryCorrectly",      testPrefix_encodesInQueryCorrectly),
+        ("testWildcard_encodesInQueryCorrectly",    testWildcard_encodesInQueryCorrectly),
+        ("testRegexp_encodesInQueryCorrectly",      testRegexp_encodesInQueryCorrectly),
+        ("testFuzzy_encodesInQueryCorrectly",       testFuzzy_encodesInQueryCorrectly),
+        ("testIDs_encodesInQueryCorrectly",         testIDs_encodesInQueryCorrectly),
 
-        ("testTerms_encodesStandaloneCorrectly", testTerms_encodesStandaloneCorrectly),
-        ("testTerms_encodesInQueryCorrectly", testTerms_encodesInQueryCorrectly),
-
-        ("testRange_encodesStandaloneCorrectly", testRange_encodesStandaloneCorrectly),
-        ("testRange_encodesStandaloneCorrectly_date", testRange_encodesStandaloneCorrectly),
-        ("testRange_encodesInQueryCorrectly", testRange_encodesInQueryCorrectly),
-
-        ("testExists_encodesStandaloneCorrectly", testExists_encodesStandaloneCorrectly),
-        ("testExists_encodesInQueryCorrectly", testExists_encodesInQueryCorrectly),
-
-        ("testBool_encodesStandaloneCorrectly", testBool_encodesStandaloneCorrectly),
-
-        ("testLinuxTestSuiteIncludesAllTests", testLinuxTestSuiteIncludesAllTests)
+        ("testLinuxTestSuiteIncludesAllTests",      testLinuxTestSuiteIncludesAllTests)
     ]
 }
