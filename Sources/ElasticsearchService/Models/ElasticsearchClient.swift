@@ -87,7 +87,7 @@ public final class ElasticsearchClient: Service {
         index: String,
         type: String = "_doc",
         _ query: QueryContainer<T>
-        ) throws -> Future<[AnyHashable: Any]> {
+    ) throws -> Future<[AnyHashable: Any]> {
         let url = constructEndpoint(pathComponents: index, type, "_search")
         var headers: HTTPHeaders = [:]
 
@@ -185,7 +185,7 @@ public final class ElasticsearchClient: Service {
         type: String = "_doc",
         _ query: [AnyHashable: Any],
         on container: Container
-        ) throws -> Future<[AnyHashable: Any]> {
+    ) throws -> Future<[AnyHashable: Any]> {
         let url = constructEndpoint(pathComponents: index, type, "_search")
         let request = try prepareGenericRequest(url: url, body: query, on: container)
 
